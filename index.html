@@ -618,13 +618,14 @@ Return ONLY this JSON:
   ],
   "doList": ["do1","do2","do3","do4"],
   "avoidList": ["avoid1","avoid2","avoid3","avoid4"],
-  "imagePrompts": [
-    "detailed image generation prompt for post 1 (warm lifestyle photo)",
-    "detailed image generation prompt for post 3 (nature/texture photo)",
-    "detailed image generation prompt for post 5 (intimate editorial photo)",
-    "detailed image generation prompt for post 7 (golden hour photo)",
-    "detailed image generation prompt for post 9 (cinematic portrait)"
-  ]
+ "gridRhythm": "Describe the overall grid balance of the reference feeds — how light and dark posts alternate, where text vs image posts sit, how negative space is distributed across the 9-post view, and what makes the grid feel cohesive as a whole",
+"imagePrompts": [
+    "Post 1 photo prompt — written as part of a coordinated 9-post grid system. Consider how this post will sit next to posts 2 and 4 in the grid. Inspired by the collective visual language of the reference feeds, not any single image. Describe subject, lighting, colour, framing, and mood in detail.",
+    "Post 3 photo prompt — written knowing post 2 is a text slide and post 4 is a teal text slide. This image needs to provide visual contrast and balance within the grid. Inspired by reference feed style.",
+    "Post 5 photo prompt — the centre post of the grid, highest visual weight. Should anchor the overall aesthetic. Inspired by the intimacy and mood of the reference feeds.",
+    "Post 7 photo prompt — written knowing posts 6 and 8 are both text slides. This image carries the bottom-left of the grid. Should feel different in composition to posts 1, 3 and 5 to create variety.",
+    "Post 9 photo prompt — bottom-right corner of the grid, the last impression. Should feel like a resolution or continuation of the overall grid story. Inspired by the reference feeds' overall rhythm."
+]
 }
 
 The imagePrompts must be detailed, photographic, and match the aesthetic. Include lighting, composition, colour temperature, subject matter, and mood. Each prompt should be 2-3 sentences.`;
@@ -737,6 +738,7 @@ function renderBrief(b, clientName, niche) {
   document.getElementById('r-grid').textContent = b.gridStyle || '';
   document.getElementById('r-space').textContent = b.negativeSpace || '';
   document.getElementById('r-tone').textContent = b.editingTone || '';
+ if(b.gridRhythm) { const gr = document.createElement('div'); gr.style.marginTop='1rem'; gr.innerHTML = `<p class="item-label">Grid rhythm</p><p class="item-value">${b.gridRhythm}</p>`; document.getElementById('r-tone').parentElement.appendChild(gr); }
 
   const pal = document.getElementById('r-palette');
   pal.innerHTML = (b.palette||[]).map(c=>`<div class="swatch"><div class="swatch-color" style="background:${c.hex};"></div><span class="swatch-hex">${c.hex}</span><span class="swatch-name">${c.name}</span><span class="swatch-role">${c.role}</span></div>`).join('');
