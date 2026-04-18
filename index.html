@@ -521,12 +521,12 @@ async function callGemini(prompt, images=[]) {
 
 async function generateImage(prompt) {
   const apiKey = document.getElementById('api-key').value.trim();
-  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${apiKey}`, {
+  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      instances: [{ prompt }],
-      parameters: { sampleCount: 1, aspectRatio: '1:1' }
+      contents: [{ parts: [{ text: `Generate a photorealistic image: ${prompt}. Return ONLY a base64 encoded PNG image, nothing else.` }] }],
+      generationConfig: { responseModalities: ['IMAGE', 'TEXT'] }
     })
   });
   if (!res.ok) {
@@ -534,9 +534,10 @@ async function generateImage(prompt) {
     throw new Error(e?.error?.message || `Image API error ${res.status}`);
   }
   const data = await res.json();
-  const b64 = data.predictions?.[0]?.bytesBase64Encoded;
-  if (!b64) throw new Error('No image returned');
-  return `data:image/png;base64,${b64}`;
+  const parts = data.candidates?.[0]?.content?.parts || [];
+  const imgPart = parts.find(p => p.inlineData?.mimeType?.startsWith('image/'));
+  if (!imgPart) throw new Error('No image returned');
+  return `data:${imgPart.inlineData.mimeType};base64,${imgPart.inlineData.data}`;
 }
 
 const POST_TYPES = [
