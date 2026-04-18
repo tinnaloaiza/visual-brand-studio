@@ -44,6 +44,14 @@
     border: 0.5px solid #d8cdc0; color: #8b7355; background: #faf7f2; transition: all 0.15s; user-select: none; }
   .pill.on { background: #2c1a0e; color: #f0e0c4; border-color: #2c1a0e; }
 
+  .swatch-pick { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; margin-top: 6px; }
+  .swatch-opt { border: 1.5px solid #e8ddd0; border-radius: 10px; padding: 8px; cursor: pointer; transition: all 0.15s; background: #faf7f2; user-select: none; }
+  .swatch-opt:hover { border-color: #c8793a; }
+  .swatch-opt.on { border-color: #c8793a; background: #fff5ee; box-shadow: 0 0 0 1px #c8793a; }
+  .swatch-multi { display: flex; height: 36px; border-radius: 6px; overflow: hidden; margin-bottom: 6px; }
+  .swatch-multi div { flex: 1; }
+  .swatch-opt span { font-size: 11px; color: #5c3a1e; line-height: 1.3; display: block; }
+
   .upload-zone { border: 0.5px dashed #d8cdc0; border-radius: 10px; padding: 1.5rem; text-align: center; cursor: pointer; transition: background 0.15s; }
   .upload-zone:hover { background: #f5f0e8; }
   .upload-zone input { display: none; }
@@ -207,10 +215,18 @@
 
   <div class="step" id="step2">
     <div class="card">
-      <p class="card-title">Pinterest board description</p>
-      <p class="card-sub">Describe what the client has saved — colours, imagery, moods, textures. The richer the description, the better the AI can match it.</p>
-      <label>What does their Pinterest board look like?</label>
-      <textarea id="pinterest-desc" placeholder="e.g. Lots of warm golden tones, terracotta sunsets, sunlight through sheer curtains, women in soft flowing fabric, ocean depth in teal, earthy textures, intimate close-up photography of hands and skin, linen and sand backgrounds, slow and embodied feeling..." style="min-height:110px;"></textarea>
+      <p class="card-title">Pinterest board</p>
+      <p class="card-sub">Screenshot the client's Pinterest board showing all the pins and upload here. You can upload multiple screenshots to cover the full board. The AI will analyse colours, imagery, and mood directly from what it sees.</p>
+      <div class="upload-zone" onclick="document.getElementById('pinterest-files').click()" id="pinterest-zone">
+        <p style="font-size:14px; color:#8b7355;"><span>Upload Pinterest board screenshots</span></p>
+        <p class="upload-hint">Up to 6 screenshots · PNG or JPG</p>
+        <input type="file" id="pinterest-files" accept="image/*" multiple />
+      </div>
+      <div class="preview-strip" id="pinterest-preview"></div>
+      <div style="margin-top:14px;">
+        <label>Any extra context about the board (optional)</label>
+        <textarea id="pinterest-desc" placeholder="e.g. She loves the warm golden tones, the intimate photography, the teal ocean images..." style="min-height:70px;"></textarea>
+      </div>
     </div>
 
     <div class="card">
@@ -245,18 +261,56 @@
 
     <div class="card">
       <p class="card-title">Colour preferences</p>
-      <p class="card-sub">What colours is the client drawn to?</p>
-      <div class="pill-group" id="colour-pills">
-        <div class="pill" onclick="togglePill(this)">Neutrals & beiges</div>
-        <div class="pill" onclick="togglePill(this)">Warm terracotta & rust</div>
-        <div class="pill" onclick="togglePill(this)">Whites & creams</div>
-        <div class="pill" onclick="togglePill(this)">Sage & olive greens</div>
-        <div class="pill" onclick="togglePill(this)">Dusty pinks & mauves</div>
-        <div class="pill" onclick="togglePill(this)">Deep navy & midnight</div>
-        <div class="pill" onclick="togglePill(this)">Bold black & white</div>
-        <div class="pill" onclick="togglePill(this)">Ocean teal & aqua</div>
-        <div class="pill" onclick="togglePill(this)">Golden & amber</div>
-        <div class="pill" onclick="togglePill(this)">Rich purples</div>
+      <p class="card-sub">Select all the colour families the client is drawn to.</p>
+      <div class="swatch-pick" id="colour-pills">
+        <div class="swatch-opt" onclick="toggleSwatch(this)" data-label="Neutrals & beiges">
+          <div class="swatch-multi"><div style="background:#e8ddd0;"></div><div style="background:#d4c4b0;"></div><div style="background:#c0aa90;"></div></div>
+          <span>Neutrals & beiges</span>
+        </div>
+        <div class="swatch-opt" onclick="toggleSwatch(this)" data-label="Warm terracotta & rust">
+          <div class="swatch-multi"><div style="background:#c8793a;"></div><div style="background:#b85a2a;"></div><div style="background:#8b3a1a;"></div></div>
+          <span>Terracotta & rust</span>
+        </div>
+        <div class="swatch-opt" onclick="toggleSwatch(this)" data-label="Whites & creams">
+          <div class="swatch-multi"><div style="background:#fff8f0;"></div><div style="background:#f5ede0;"></div><div style="background:#ede0cc;"></div></div>
+          <span>Whites & creams</span>
+        </div>
+        <div class="swatch-opt" onclick="toggleSwatch(this)" data-label="Sage & olive greens">
+          <div class="swatch-multi"><div style="background:#a0b090;"></div><div style="background:#7a9070;"></div><div style="background:#556650;"></div></div>
+          <span>Sage & olive</span>
+        </div>
+        <div class="swatch-opt" onclick="toggleSwatch(this)" data-label="Dusty pinks & mauves">
+          <div class="swatch-multi"><div style="background:#e0b0b0;"></div><div style="background:#c89090;"></div><div style="background:#a07070;"></div></div>
+          <span>Dusty pinks & mauves</span>
+        </div>
+        <div class="swatch-opt" onclick="toggleSwatch(this)" data-label="Deep navy & midnight">
+          <div class="swatch-multi"><div style="background:#2a3a5a;"></div><div style="background:#1a2a4a;"></div><div style="background:#0e1a30;"></div></div>
+          <span>Navy & midnight</span>
+        </div>
+        <div class="swatch-opt" onclick="toggleSwatch(this)" data-label="Bold black & white">
+          <div class="swatch-multi"><div style="background:#1a1a1a;"></div><div style="background:#888;"></div><div style="background:#f0f0f0;"></div></div>
+          <span>Black & white</span>
+        </div>
+        <div class="swatch-opt" onclick="toggleSwatch(this)" data-label="Ocean teal & aqua">
+          <div class="swatch-multi"><div style="background:#4a9a9a;"></div><div style="background:#2a7a8a;"></div><div style="background:#1a5a6a;"></div></div>
+          <span>Ocean teal & aqua</span>
+        </div>
+        <div class="swatch-opt" onclick="toggleSwatch(this)" data-label="Golden & amber">
+          <div class="swatch-multi"><div style="background:#d4a840;"></div><div style="background:#c09030;"></div><div style="background:#a07020;"></div></div>
+          <span>Golden & amber</span>
+        </div>
+        <div class="swatch-opt" onclick="toggleSwatch(this)" data-label="Rich purples">
+          <div class="swatch-multi"><div style="background:#8a60b0;"></div><div style="background:#6a4090;"></div><div style="background:#4a2070;"></div></div>
+          <span>Rich purples</span>
+        </div>
+        <div class="swatch-opt" onclick="toggleSwatch(this)" data-label="Warm pinks & blush">
+          <div class="swatch-multi"><div style="background:#f0c0b0;"></div><div style="background:#e09080;"></div><div style="background:#c86050;"></div></div>
+          <span>Warm pinks & blush</span>
+        </div>
+        <div class="swatch-opt" onclick="toggleSwatch(this)" data-label="Forest & deep greens">
+          <div class="swatch-multi"><div style="background:#4a7a5a;"></div><div style="background:#2a5a3a;"></div><div style="background:#1a3a2a;"></div></div>
+          <span>Forest & deep greens</span>
+        </div>
       </div>
     </div>
 
@@ -363,6 +417,7 @@
 
 <script>
 let gridBase64 = [];
+let pinterestBase64 = [];
 let briefData = null;
 let generatedImages = [];
 
@@ -378,33 +433,47 @@ function goStep(n) {
 }
 
 function togglePill(el) { el.classList.toggle('on'); }
+function toggleSwatch(el) { el.classList.toggle('on'); }
 function getSelected(id) {
-  return Array.from(document.querySelectorAll(`#${id} .pill.on`)).map(p=>p.textContent);
+  const container = document.getElementById(id);
+  const pills = container.querySelectorAll('.pill.on');
+  const swatches = container.querySelectorAll('.swatch-opt.on');
+  if(pills.length) return Array.from(pills).map(p=>p.textContent.trim());
+  return Array.from(swatches).map(s=>s.dataset.label);
 }
 
-document.getElementById('grid-files').addEventListener('change', e => handleFiles(e.target.files));
-const uz = document.querySelector('.upload-zone');
+document.getElementById('grid-files').addEventListener('change', e => handleFiles(e.target.files, 'grid'));
+document.getElementById('pinterest-files').addEventListener('change', e => handleFiles(e.target.files, 'pinterest'));
+const uz = document.querySelector('#pinterest-zone');
 uz.addEventListener('dragover', e => { e.preventDefault(); uz.style.background='#f0e8da'; });
 uz.addEventListener('dragleave', () => uz.style.background='');
-uz.addEventListener('drop', e => { e.preventDefault(); uz.style.background=''; handleFiles(e.dataTransfer.files); });
+uz.addEventListener('drop', e => { e.preventDefault(); uz.style.background=''; handleFiles(e.dataTransfer.files, 'pinterest'); });
+const uz2 = document.querySelector('.upload-zone:not(#pinterest-zone)');
+uz2.addEventListener('dragover', e => { e.preventDefault(); uz2.style.background='#f0e8da'; });
+uz2.addEventListener('dragleave', () => uz2.style.background='');
+uz2.addEventListener('drop', e => { e.preventDefault(); uz2.style.background=''; handleFiles(e.dataTransfer.files, 'grid'); });
 
-function handleFiles(files) {
-  const rem = 5 - gridBase64.length;
+function handleFiles(files, type) {
+  const arr = type === 'pinterest' ? pinterestBase64 : gridBase64;
+  const max = type === 'pinterest' ? 6 : 5;
+  const rem = max - arr.length;
   Array.from(files).slice(0, rem).forEach(f => {
     const r = new FileReader();
-    r.onload = ev => { gridBase64.push(ev.target.result); renderPreviews(); };
+    r.onload = ev => { arr.push(ev.target.result); renderPreviews(type); };
     r.readAsDataURL(f);
   });
 }
 
-function renderPreviews() {
-  const strip = document.getElementById('preview-strip');
+function renderPreviews(type) {
+  const arr = type === 'pinterest' ? pinterestBase64 : gridBase64;
+  const stripId = type === 'pinterest' ? 'pinterest-preview' : 'preview-strip';
+  const strip = document.getElementById(stripId);
   strip.innerHTML = '';
-  gridBase64.forEach((b64, i) => {
+  arr.forEach((b64, i) => {
     const w = document.createElement('div'); w.className = 'preview-wrap';
     const img = document.createElement('img'); img.src = b64; img.className = 'preview-img';
     const btn = document.createElement('button'); btn.className = 'preview-remove'; btn.textContent = '×';
-    btn.onclick = e => { e.stopPropagation(); gridBase64.splice(i,1); renderPreviews(); };
+    btn.onclick = e => { e.stopPropagation(); arr.splice(i,1); renderPreviews(type); };
     w.appendChild(img); w.appendChild(btn); strip.appendChild(w);
   });
 }
@@ -509,8 +578,9 @@ CLIENT:
 - Audience: ${audience || 'not specified'}
 
 INSPIRATION:
-- Pinterest board: ${pinterestDesc || 'not provided'}
-- Reference screenshots: ${gridBase64.length} uploaded grid screenshots${gridBase64.length > 0 ? ' — analyse for grid rhythm, colour consistency, negative space, typography style, content balance, and overall aesthetic feeling' : ''}
+- Pinterest board: ${pinterestBase64.length > 0 ? `${pinterestBase64.length} Pinterest board screenshot(s) uploaded — analyse carefully for dominant colours, imagery style, mood, textures, and overall aesthetic direction` : 'not provided'}
+- Pinterest extra context: ${pinterestDesc || 'none'}
+- Reference Instagram grid screenshots: ${gridBase64.length} uploaded${gridBase64.length > 0 ? ' — analyse for grid rhythm, colour consistency, negative space, typography style, content balance, and overall aesthetic feeling' : ''}
 - Aesthetic vibes: ${vibes.join(', ') || 'not specified'}
 - Colour preferences: ${colours.join(', ') || 'not specified'}
 - Avoid: ${avoid || 'nothing specified'}
@@ -553,7 +623,8 @@ Return ONLY this JSON:
 
 The imagePrompts must be detailed, photographic, and match the aesthetic. Include lighting, composition, colour temperature, subject matter, and mood. Each prompt should be 2-3 sentences.`;
 
-    const briefText = await callGemini(briefPrompt, gridBase64);
+    const allImages = [...pinterestBase64, ...gridBase64];
+    const briefText = await callGemini(briefPrompt, allImages);
     let raw = briefText.replace(/```json|```/g,'').trim();
     const js = raw.indexOf('{'), je = raw.lastIndexOf('}');
     if(js===-1||je===-1) throw new Error('Could not parse the brief. Please try again.');
@@ -678,9 +749,11 @@ function renderBrief(b, clientName, niche) {
 
 function resetApp() {
   gridBase64 = [];
+  pinterestBase64 = [];
   briefData = null;
   generatedImages = [];
   document.getElementById('preview-strip').innerHTML = '';
+  document.getElementById('pinterest-preview').innerHTML = '';
   document.getElementById('client-name').value = '';
   document.getElementById('client-niche').value = '';
   document.getElementById('client-audience').value = '';
