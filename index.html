@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Visual Brand Studio</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Georgia', serif; background: #faf7f2; color: #2c1a0e; min-height: 100vh; }
+  
+  .app { max-width: 860px; margin: 0 auto; padding: 2rem 1.5rem; }
+  
+  header { text-align: center; margin-bottom: 3rem; padding-bottom: 2rem; border-bottom: 0.5px solid #e0d5c5; }
+  header h1 { font-size: 28px; font-weight: 400; letter-spacing: 2px; color: #2c1a0e; }
+  header p { font-size: 14px; color: #8b7355; margin-top: 6px; letter-spacing: 0.5px; }
+
+  .step-bar { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 2.5rem; }
+  .step-dot { width: 8px; height: 8px; border-radius: 50%; background: #e0d5c5; transition: background 0.3s; }
+  .step-dot.active { background: #c8793a; }
+  .step-dot.done { background: #d4b896; }
+  .step-text { font-size: 12px; color: #8b7355; letter-spacing: 1px; }
+
+  .step { display: none; }
+  .step.active { display: block; }
+
+  .card { background: #fff; border: 0.5px solid #e8ddd0; border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; }
+  .card-title { font-size: 17px; font-weight: 400; color: #2c1a0e; margin-bottom: 4px; }
+  .card-sub { font-size: 13px; color: #8b7355; margin-bottom: 1.25rem; line-height: 1.6; }
+
+  label { font-size: 12px; color: #8b7355; letter-spacing: 0.5px; display: block; margin-bottom: 6px; }
+  input[type=text], input[type=password], textarea, select {
+    width: 100%; padding: 10px 14px; font-size: 14px; font-family: 'Georgia', serif;
+    border: 0.5px solid #d8cdc0; border-radius: 8px; background: #faf7f2;
+    color: #2c1a0e; outline: none; transition: border 0.2s;
+  }
+  input:focus, textarea:focus { border-color: #c8793a; }
+  textarea { resize: vertical; min-height: 80px; }
+
+  .field-group { display: grid; gap: 14px; }
+  .field-group.two { grid-template-columns: 1fr 1fr; }
+
+  .pill-group { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+  .pill { padding: 6px 14px; border-radius: 20px; font-size: 12px; cursor: pointer; font-family: 'Georgia', serif;
+    border: 0.5px solid #d8cdc0; color: #8b7355; background: #faf7f2; transition: all 0.15s; user-select: none; }
+  .pill.on { background: #2c1a0e; color: #f0e0c4; border-color: #2c1a0e; }
+
+  .upload-zone { border: 0.5px dashed #d8cdc0; border-radius: 10px; padding: 1.5rem; text-align: center; cursor: pointer; transition: background 0.15s; }
+  .upload-zone:hover { background: #f5f0e8; }
+  .upload-zone input { display: none; }
+  .upload-hint { font-size: 13px; color: #8b7355; margin-top: 4px; }
+  .upload-hint span { color: #c8793a; text-decoration: underline; cursor: pointer; text-underline-offset: 2px; }
+
+  .preview-strip { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+  .preview-wrap { position: relative; }
+  .preview-img { width: 72px; height: 72px; object-fit: cover; border-radius: 8px; border: 0.5px solid #e0d5c5; display: block; }
+  .preview-remove { position: absolute; top: -6px; right: -6px; width: 18px; height: 18px; border-radius: 50%;
+    background: #2c1a0e; color: #f0e0c4; border: none; cursor: pointer; font-size: 11px;
+    display: flex; align-items: center; justify-content: center; }
+
+  .api-note { font-size: 12px; color: #8b7355; background: #f5f0e8; border-radius: 8px; padding: 10px 14px; margin-top: 8px; line-height: 1.5; }
+
+  .btn-row { display: flex; justify-content: space-between; align-items: center; margin-top: 1.75rem; }
+  .btn { padding: 11px 24px; border-radius: 8px; font-size: 13px; font-family: 'Georgia', serif;
+    cursor: pointer; border: 0.5px solid #d8cdc0; background: #faf7f2; color: #2c1a0e; transition: all 0.15s; letter-spacing: 0.3px; }
+  .btn:hover { background: #f0e8da; }
+  .btn.primary { background: #2c1a0e; color: #f0e0c4; border-color: #2c1a0e; }
+  .btn.primary:hover { background: #3d2a18; }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .loading { text-align: center; padding: 4rem 1rem; }
+  .spinner { width: 32px; height: 32px; border: 2px solid #e0d5c5; border-top-color: #c8793a;
+    border-radius: 50%; animation: spin 0.9s linear infinite; margin: 0 auto 1.25rem; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-title { font-size: 16px; color: #2c1a0e; margin-bottom: 6px; }
+  .loading-sub { font-size: 13px; color: #8b7355; }
+  .loading-steps { margin-top: 1.5rem; display: flex; flex-direction: column; gap: 8px; max-width: 320px; margin-left: auto; margin-right: auto; }
+  .loading-step { font-size: 12px; padding: 8px 14px; border-radius: 20px; background: #f5f0e8; color: #8b7355; transition: all 0.3s; }
+  .loading-step.current { background: #c8793a; color: #f0e0c4; }
+  .loading-step.done { background: #d4b896; color: #5c3a1e; }
+
+  .error-box { background: #fdf0ee; border: 0.5px solid #e8b0a0; border-radius: 8px; padding: 1rem 1.25rem; font-size: 13px; color: #8b3a2a; line-height: 1.6; margin-bottom: 1rem; }
+
+  .brief-output { animation: fadeIn 0.4s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  .brief-header { background: #2c1a0e; border-radius: 12px 12px 0 0; padding: 2rem; }
+  .brief-logo-text { font-size: 10px; letter-spacing: 3px; color: #d4b896; opacity: 0.5; text-transform: uppercase; margin-bottom: 8px; }
+  .brief-client-name { font-size: 26px; color: #f0e0c4; font-weight: 400; }
+  .brief-client-niche { font-size: 13px; color: #d4b896; opacity: 0.6; margin-top: 4px; }
+
+  .brief-body { background: #fff; border: 0.5px solid #e8ddd0; border-top: none; border-radius: 0 0 12px 12px; padding: 1.75rem; }
+  .brief-section { margin-bottom: 1.75rem; padding-bottom: 1.75rem; border-bottom: 0.5px solid #f0e8da; }
+  .brief-section:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+  .brief-section-label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: #b0a090; margin-bottom: 1rem; }
+  .mood-badge { display: inline-block; padding: 5px 14px; border-radius: 20px; font-size: 13px; background: #f5ede0; color: #7a4a1e; margin-bottom: 10px; }
+  .brief-text { font-size: 13px; color: #5c3a1e; line-height: 1.75; }
+
+  .palette-row { display: flex; gap: 12px; flex-wrap: wrap; }
+  .swatch { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+  .swatch-color { width: 52px; height: 52px; border-radius: 8px; border: 0.5px solid #e0d5c5; }
+  .swatch-hex { font-size: 10px; color: #8b7355; font-family: monospace; }
+  .swatch-name { font-size: 10px; color: #5c3a1e; text-align: center; max-width: 60px; line-height: 1.3; }
+  .swatch-role { font-size: 9px; color: #b0a090; text-align: center; max-width: 60px; }
+
+  .font-row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .font-card { background: #faf7f2; border-radius: 8px; padding: 12px 14px; flex: 1; min-width: 130px; }
+  .font-role-label { font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: #b0a090; margin-bottom: 4px; }
+  .font-name-text { font-size: 15px; color: #2c1a0e; }
+  .font-use-text { font-size: 11px; color: #8b7355; margin-top: 3px; line-height: 1.4; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+  .item-label { font-size: 11px; color: #b0a090; margin-bottom: 4px; letter-spacing: 0.5px; }
+  .item-value { font-size: 13px; color: #5c3a1e; line-height: 1.6; }
+
+  .template-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .template-card { background: #faf7f2; border-radius: 8px; padding: 12px; }
+  .template-card-name { font-size: 13px; color: #2c1a0e; margin-bottom: 4px; }
+  .template-card-desc { font-size: 11px; color: #8b7355; line-height: 1.4; }
+
+  .do-avoid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+  .do-avoid ul { list-style: none; padding: 0; }
+  .do-avoid li { font-size: 12px; color: #5c3a1e; margin-bottom: 6px; padding-left: 16px; position: relative; line-height: 1.5; }
+  .do li::before { content: "✓"; position: absolute; left: 0; color: #7a9a5a; }
+  .avoid li::before { content: "✗"; position: absolute; left: 0; color: #c87070; }
+
+  .feed-section { margin-top: 2.5rem; }
+  .feed-title { font-size: 17px; color: #2c1a0e; margin-bottom: 4px; }
+  .feed-sub { font-size: 13px; color: #8b7355; margin-bottom: 1.25rem; line-height: 1.5; }
+
+  .phone-frame { background: #1a1a1a; border-radius: 36px; padding: 16px; max-width: 340px; margin: 0 auto; box-shadow: 0 8px 40px rgba(0,0,0,0.15); }
+  .phone-screen { background: #fff; border-radius: 24px; overflow: hidden; }
+  .phone-insta-header { padding: 10px 14px; border-bottom: 0.5px solid #f0f0f0; display: flex; align-items: center; gap: 8px; }
+  .phone-avatar { width: 28px; height: 28px; border-radius: 50%; background: #c8793a; display: flex; align-items: center; justify-content: center; font-size: 9px; color: #f0e0c4; flex-shrink: 0; }
+  .phone-handle { font-size: 11px; font-weight: 600; color: #1a1a1a; font-family: -apple-system, sans-serif; }
+  .phone-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5px; }
+  .phone-cell { aspect-ratio: 1; overflow: hidden; position: relative; }
+  .phone-cell img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .phone-cell-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+  .phone-cell-text { padding: 6px; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; }
+
+  .gen-progress { margin-top: 1rem; }
+  .gen-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 0.5px solid #f0e8da; font-size: 12px; color: #8b7355; }
+  .gen-item:last-child { border-bottom: none; }
+  .gen-dot { width: 8px; height: 8px; border-radius: 50%; background: #e0d5c5; flex-shrink: 0; }
+  .gen-dot.done { background: #7a9a5a; }
+  .gen-dot.current { background: #c8793a; animation: pulse 1s infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+  .action-row { display: flex; gap: 10px; margin-top: 1.5rem; flex-wrap: wrap; }
+
+  @media (max-width: 600px) {
+    .field-group.two { grid-template-columns: 1fr; }
+    .two-col { grid-template-columns: 1fr; }
+    .template-row { grid-template-columns: 1fr 1fr; }
+    .do-avoid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header>
+    <h1>Visual Brand Studio</h1>
+    <p>AI-powered Instagram aesthetic briefs & feed mockups</p>
+  </header>
+
+  <div class="step-bar">
+    <div class="step-dot active" id="dot1"></div>
+    <div class="step-dot" id="dot2"></div>
+    <div class="step-dot" id="dot3"></div>
+    <span class="step-text" id="step-text">Step 1 of 3</span>
+  </div>
+
+  <div class="step active" id="step1">
+    <div class="card">
+      <p class="card-title">Your Gemini API key</p>
+      <p class="card-sub">Your key is used only in your browser and never stored anywhere. Get it free at aistudio.google.com</p>
+      <label>Gemini API key</label>
+      <input type="password" id="api-key" placeholder="AIzaSy..." />
+      <p class="api-note">This stays private in your browser session only. It is never sent anywhere except directly to Google's API.</p>
+    </div>
+
+    <div class="card">
+      <p class="card-title">Client details</p>
+      <p class="card-sub">Tell us about the client so the brief feels personal and specific.</p>
+      <div class="field-group">
+        <div>
+          <label>Client or brand name</label>
+          <input type="text" id="client-name" placeholder="e.g. Her Sacred Psyche" />
+        </div>
+        <div>
+          <label>Niche / industry</label>
+          <input type="text" id="client-niche" placeholder="e.g. Spirituality & self love coach" />
+        </div>
+        <div>
+          <label>Target audience</label>
+          <input type="text" id="client-audience" placeholder="e.g. Women 30–50 on a journey of self-discovery" />
+        </div>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <span></span>
+      <button class="btn primary" onclick="goStep(2)">Next →</button>
+    </div>
+  </div>
+
+  <div class="step" id="step2">
+    <div class="card">
+      <p class="card-title">Pinterest board description</p>
+      <p class="card-sub">Describe what the client has saved — colours, imagery, moods, textures. The richer the description, the better the AI can match it.</p>
+      <label>What does their Pinterest board look like?</label>
+      <textarea id="pinterest-desc" placeholder="e.g. Lots of warm golden tones, terracotta sunsets, sunlight through sheer curtains, women in soft flowing fabric, ocean depth in teal, earthy textures, intimate close-up photography of hands and skin, linen and sand backgrounds, slow and embodied feeling..." style="min-height:110px;"></textarea>
+    </div>
+
+    <div class="card">
+      <p class="card-title">Reference feed screenshots</p>
+      <p class="card-sub">Upload 3–5 screenshots of Instagram grids the client loves — the full grid view. The AI will analyse the overall rhythm, colour consistency, negative space, and visual patterns.</p>
+      <div class="upload-zone" onclick="document.getElementById('grid-files').click()">
+        <p style="font-size:14px; color:#8b7355;"><span>Choose screenshots</span> or drag and drop</p>
+        <p class="upload-hint">3–5 full grid screenshots · PNG or JPG</p>
+        <input type="file" id="grid-files" accept="image/*" multiple />
+      </div>
+      <div class="preview-strip" id="preview-strip"></div>
+    </div>
+
+    <div class="card">
+      <p class="card-title">Aesthetic direction</p>
+      <p class="card-sub">Select all that resonate with the client's desired vibe.</p>
+      <div class="pill-group" id="vibe-pills">
+        <div class="pill" onclick="togglePill(this)">Clean & minimal</div>
+        <div class="pill" onclick="togglePill(this)">Warm & earthy</div>
+        <div class="pill" onclick="togglePill(this)">Bold & graphic</div>
+        <div class="pill" onclick="togglePill(this)">Soft & romantic</div>
+        <div class="pill" onclick="togglePill(this)">Dark & moody</div>
+        <div class="pill" onclick="togglePill(this)">Bright & playful</div>
+        <div class="pill" onclick="togglePill(this)">Editorial & fashion</div>
+        <div class="pill" onclick="togglePill(this)">Natural & organic</div>
+        <div class="pill" onclick="togglePill(this)">Luxury & refined</div>
+        <div class="pill" onclick="togglePill(this)">Sensual & embodied</div>
+        <div class="pill" onclick="togglePill(this)">Spiritual & mystical</div>
+        <div class="pill" onclick="togglePill(this)">Raw & authentic</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <p class="card-title">Colour preferences</p>
+      <p class="card-sub">What colours is the client drawn to?</p>
+      <div class="pill-group" id="colour-pills">
+        <div class="pill" onclick="togglePill(this)">Neutrals & beiges</div>
+        <div class="pill" onclick="togglePill(this)">Warm terracotta & rust</div>
+        <div class="pill" onclick="togglePill(this)">Whites & creams</div>
+        <div class="pill" onclick="togglePill(this)">Sage & olive greens</div>
+        <div class="pill" onclick="togglePill(this)">Dusty pinks & mauves</div>
+        <div class="pill" onclick="togglePill(this)">Deep navy & midnight</div>
+        <div class="pill" onclick="togglePill(this)">Bold black & white</div>
+        <div class="pill" onclick="togglePill(this)">Ocean teal & aqua</div>
+        <div class="pill" onclick="togglePill(this)">Golden & amber</div>
+        <div class="pill" onclick="togglePill(this)">Rich purples</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <p class="card-title">Anything to avoid?</p>
+      <p class="card-sub">Colours, styles, or vibes that are off-brand or the client dislikes.</p>
+      <textarea id="avoid-text" placeholder="e.g. Nothing too corporate or polished, avoid bright neon colours, no overly styled stock imagery" style="min-height:60px;"></textarea>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn" onclick="goStep(1)">← Back</button>
+      <button class="btn primary" onclick="startGeneration()">Generate brief & feed →</button>
+    </div>
+  </div>
+
+  <div class="step" id="step3">
+    <div id="loading-view">
+      <div class="loading">
+        <div class="spinner"></div>
+        <p class="loading-title" id="loading-title">Analysing your inputs...</p>
+        <p class="loading-sub">This takes about 60–90 seconds. Please don't close this tab.</p>
+        <div class="loading-steps">
+          <div class="loading-step" id="ls1">Analysing reference feeds & Pinterest board</div>
+          <div class="loading-step" id="ls2">Generating aesthetic brief</div>
+          <div class="loading-step" id="ls3">Creating feed images</div>
+          <div class="loading-step" id="ls4">Assembling the mockup feed</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="error-view" style="display:none;">
+      <div class="error-box" id="error-msg"></div>
+      <button class="btn" onclick="goStep(2)">← Go back and try again</button>
+    </div>
+
+    <div id="result-view" style="display:none;" class="brief-output">
+      <div class="brief-header">
+        <p class="brief-logo-text">Visual Brand Studio</p>
+        <p class="brief-client-name" id="r-name"></p>
+        <p class="brief-client-niche" id="r-niche"></p>
+      </div>
+      <div class="brief-body">
+        <div class="brief-section">
+          <p class="brief-section-label">Aesthetic direction</p>
+          <div class="mood-badge" id="r-mood"></div>
+          <p class="brief-text" id="r-mood-desc"></p>
+        </div>
+        <div class="brief-section">
+          <p class="brief-section-label">Reference feed observations</p>
+          <p class="brief-text" id="r-grid-insights"></p>
+        </div>
+        <div class="brief-section">
+          <p class="brief-section-label">Colour palette</p>
+          <div class="palette-row" id="r-palette"></div>
+        </div>
+        <div class="brief-section">
+          <p class="brief-section-label">Font pairings</p>
+          <div class="font-row" id="r-fonts"></div>
+        </div>
+        <div class="brief-section">
+          <p class="brief-section-label">Grid & feed direction</p>
+          <div class="two-col">
+            <div><p class="item-label">Grid layout</p><p class="item-value" id="r-grid"></p></div>
+            <div><p class="item-label">Negative space</p><p class="item-value" id="r-space"></p></div>
+          </div>
+          <div style="margin-top:1rem;"><p class="item-label">Editing & photo tone</p><p class="item-value" id="r-tone"></p></div>
+        </div>
+        <div class="brief-section">
+          <p class="brief-section-label">Carousel template styles</p>
+          <div class="template-row" id="r-templates"></div>
+        </div>
+        <div class="brief-section">
+          <p class="brief-section-label">Visual guidelines</p>
+          <div class="do-avoid">
+            <div class="do"><p class="item-label" style="margin-bottom:8px;">Do</p><ul id="r-do"></ul></div>
+            <div class="avoid"><p class="item-label" style="margin-bottom:8px;">Avoid</p><ul id="r-avoid"></ul></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="feed-section">
+        <p class="feed-title">AI-generated feed mockup</p>
+        <p class="feed-sub">9-post grid generated to match the aesthetic brief. Each image is created by Gemini based on this client's specific direction.</p>
+        <div class="phone-frame">
+          <div class="phone-screen">
+            <div class="phone-insta-header">
+              <div class="phone-avatar" id="feed-avatar"></div>
+              <span class="phone-handle" id="feed-handle"></span>
+            </div>
+            <div class="phone-grid" id="feed-grid"></div>
+          </div>
+        </div>
+        <div class="gen-progress" id="gen-progress"></div>
+      </div>
+
+      <div class="action-row">
+        <button class="btn primary" onclick="window.print()">Save as PDF</button>
+        <button class="btn" onclick="resetApp()">New brief</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+let gridBase64 = [];
+let briefData = null;
+let generatedImages = [];
+
+function goStep(n) {
+  document.querySelectorAll('.step').forEach((s,i) => s.classList.toggle('active', i===n-1));
+  ['dot1','dot2','dot3'].forEach((id,i) => {
+    const d = document.getElementById(id);
+    d.classList.remove('active','done');
+    if(i===n-1) d.classList.add('active');
+    else if(i<n-1) d.classList.add('done');
+  });
+  document.getElementById('step-text').textContent = `Step ${n} of 3`;
+}
+
+function togglePill(el) { el.classList.toggle('on'); }
+function getSelected(id) {
+  return Array.from(document.querySelectorAll(`#${id} .pill.on`)).map(p=>p.textContent);
+}
+
+document.getElementById('grid-files').addEventListener('change', e => handleFiles(e.target.files));
+const uz = document.querySelector('.upload-zone');
+uz.addEventListener('dragover', e => { e.preventDefault(); uz.style.background='#f0e8da'; });
+uz.addEventListener('dragleave', () => uz.style.background='');
+uz.addEventListener('drop', e => { e.preventDefault(); uz.style.background=''; handleFiles(e.dataTransfer.files); });
+
+function handleFiles(files) {
+  const rem = 5 - gridBase64.length;
+  Array.from(files).slice(0, rem).forEach(f => {
+    const r = new FileReader();
+    r.onload = ev => { gridBase64.push(ev.target.result); renderPreviews(); };
+    r.readAsDataURL(f);
+  });
+}
+
+function renderPreviews() {
+  const strip = document.getElementById('preview-strip');
+  strip.innerHTML = '';
+  gridBase64.forEach((b64, i) => {
+    const w = document.createElement('div'); w.className = 'preview-wrap';
+    const img = document.createElement('img'); img.src = b64; img.className = 'preview-img';
+    const btn = document.createElement('button'); btn.className = 'preview-remove'; btn.textContent = '×';
+    btn.onclick = e => { e.stopPropagation(); gridBase64.splice(i,1); renderPreviews(); };
+    w.appendChild(img); w.appendChild(btn); strip.appendChild(w);
+  });
+}
+
+function setLoadingStep(n) {
+  ['ls1','ls2','ls3','ls4'].forEach((id,i) => {
+    const el = document.getElementById(id);
+    el.className = 'loading-step' + (i===n-1?' current': i<n-1?' done':'');
+  });
+  const titles = ['Analysing reference feeds...','Generating aesthetic brief...','Creating feed images...','Assembling the mockup...'];
+  document.getElementById('loading-title').textContent = titles[n-1] || 'Almost done...';
+}
+
+function showError(msg) {
+  document.getElementById('loading-view').style.display = 'none';
+  document.getElementById('error-view').style.display = 'block';
+  document.getElementById('error-msg').textContent = msg;
+}
+
+async function callGemini(prompt, images=[]) {
+  const apiKey = document.getElementById('api-key').value.trim();
+  const parts = [];
+  images.forEach(b64 => {
+    const mime = b64.split(';')[0].split(':')[1];
+    parts.push({ inlineData: { mimeType: mime, data: b64.split(',')[1] } });
+  });
+  parts.push({ text: prompt });
+  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ contents: [{ parts }] })
+  });
+  if (!res.ok) {
+    const e = await res.json().catch(()=>({}));
+    throw new Error(e?.error?.message || `API error ${res.status}`);
+  }
+  const data = await res.json();
+  return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+}
+
+async function generateImage(prompt) {
+  const apiKey = document.getElementById('api-key').value.trim();
+  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${apiKey}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      instances: [{ prompt }],
+      parameters: { sampleCount: 1, aspectRatio: '1:1' }
+    })
+  });
+  if (!res.ok) {
+    const e = await res.json().catch(()=>({}));
+    throw new Error(e?.error?.message || `Image API error ${res.status}`);
+  }
+  const data = await res.json();
+  const b64 = data.predictions?.[0]?.bytesBase64Encoded;
+  if (!b64) throw new Error('No image returned');
+  return `data:image/png;base64,${b64}`;
+}
+
+const POST_TYPES = [
+  { type: 'image', label: 'Warm lifestyle photo' },
+  { type: 'text',  label: 'Statement text slide' },
+  { type: 'image', label: 'Nature / texture photo' },
+  { type: 'text',  label: 'Teal portal question' },
+  { type: 'image', label: 'Intimate editorial photo' },
+  { type: 'text',  label: 'Dark moody quote' },
+  { type: 'image', label: 'Golden hour photo' },
+  { type: 'text',  label: 'Minimal affirmation' },
+  { type: 'image', label: 'Cinematic portrait' },
+];
+
+async function startGeneration() {
+  const apiKey = document.getElementById('api-key').value.trim();
+  if (!apiKey) { alert('Please enter your Gemini API key first.'); goStep(1); return; }
+
+  goStep(3);
+  document.getElementById('loading-view').style.display = 'block';
+  document.getElementById('error-view').style.display = 'none';
+  document.getElementById('result-view').style.display = 'none';
+
+  const clientName = document.getElementById('client-name').value || 'Client';
+  const niche = document.getElementById('client-niche').value;
+  const audience = document.getElementById('client-audience').value;
+  const pinterestDesc = document.getElementById('pinterest-desc').value;
+  const vibes = getSelected('vibe-pills');
+  const colours = getSelected('colour-pills');
+  const avoid = document.getElementById('avoid-text').value;
+
+  try {
+    setLoadingStep(1);
+    await new Promise(r => setTimeout(r, 400));
+
+    setLoadingStep(2);
+    const briefPrompt = `You are a visual brand strategist specialising in Instagram aesthetics.
+
+Generate a detailed Instagram visual brand brief. Return ONLY valid JSON — no markdown, no backticks, start with { end with }.
+
+CLIENT:
+- Name: ${clientName}
+- Niche: ${niche || 'not specified'}
+- Audience: ${audience || 'not specified'}
+
+INSPIRATION:
+- Pinterest board: ${pinterestDesc || 'not provided'}
+- Reference screenshots: ${gridBase64.length} uploaded grid screenshots${gridBase64.length > 0 ? ' — analyse for grid rhythm, colour consistency, negative space, typography style, content balance, and overall aesthetic feeling' : ''}
+- Aesthetic vibes: ${vibes.join(', ') || 'not specified'}
+- Colour preferences: ${colours.join(', ') || 'not specified'}
+- Avoid: ${avoid || 'nothing specified'}
+
+Return ONLY this JSON:
+{
+  "mood": "3-5 word aesthetic label",
+  "moodDescription": "2-3 sentences on overall direction and what makes this feed cohesive",
+  "gridInsights": "2-3 sentences on patterns from reference feeds",
+  "palette": [
+    {"hex":"#hex","name":"name","role":"role"},
+    {"hex":"#hex","name":"name","role":"role"},
+    {"hex":"#hex","name":"name","role":"role"},
+    {"hex":"#hex","name":"name","role":"role"},
+    {"hex":"#hex","name":"name","role":"role"}
+  ],
+  "fonts": [
+    {"name":"Font","role":"Heading / Display","usage":"where to use"},
+    {"name":"Font","role":"Body / Caption","usage":"where to use"},
+    {"name":"Font","role":"Accent","usage":"where to use"}
+  ],
+  "gridStyle": "specific grid layout recommendation",
+  "negativeSpace": "specific negative space guidance",
+  "editingTone": "specific photo editing direction",
+  "carouselTemplates": [
+    {"name":"name","description":"desc"},
+    {"name":"name","description":"desc"},
+    {"name":"name","description":"desc"}
+  ],
+  "doList": ["do1","do2","do3","do4"],
+  "avoidList": ["avoid1","avoid2","avoid3","avoid4"],
+  "imagePrompts": [
+    "detailed image generation prompt for post 1 (warm lifestyle photo)",
+    "detailed image generation prompt for post 3 (nature/texture photo)",
+    "detailed image generation prompt for post 5 (intimate editorial photo)",
+    "detailed image generation prompt for post 7 (golden hour photo)",
+    "detailed image generation prompt for post 9 (cinematic portrait)"
+  ]
+}
+
+The imagePrompts must be detailed, photographic, and match the aesthetic. Include lighting, composition, colour temperature, subject matter, and mood. Each prompt should be 2-3 sentences.`;
+
+    const briefText = await callGemini(briefPrompt, gridBase64);
+    let raw = briefText.replace(/```json|```/g,'').trim();
+    const js = raw.indexOf('{'), je = raw.lastIndexOf('}');
+    if(js===-1||je===-1) throw new Error('Could not parse the brief. Please try again.');
+    briefData = JSON.parse(raw.slice(js, je+1));
+
+    renderBrief(briefData, clientName, niche);
+
+    setLoadingStep(3);
+    generatedImages = [null,null,null,null,null];
+    const imageIndices = [0,1,2,3,4];
+    const feedGrid = document.getElementById('feed-grid');
+    feedGrid.innerHTML = '';
+
+    const cells = [];
+    for(let i=0;i<9;i++) {
+      const cell = document.createElement('div');
+      cell.className = 'phone-cell';
+      cell.id = `cell-${i}`;
+      feedGrid.appendChild(cell);
+      cells.push(cell);
+    }
+
+    renderTextCells(briefData, cells);
+
+    const progress = document.getElementById('gen-progress');
+    progress.innerHTML = '<p style="font-size:12px;color:#8b7355;margin-bottom:10px;">Generating images...</p>';
+    const progressItems = POST_TYPES.filter(p=>p.type==='image').map((p,i) => {
+      const div = document.createElement('div'); div.className='gen-item';
+      div.innerHTML = `<div class="gen-dot" id="gdot-${i}"></div><span>${p.label}</span>`;
+      progress.appendChild(div);
+      return div;
+    });
+
+    for(let i=0;i<imageIndices.length;i++) {
+      const gdot = document.getElementById(`gdot-${i}`);
+      if(gdot) gdot.className = 'gen-dot current';
+      try {
+        const prompt = briefData.imagePrompts?.[i] || `${briefData.mood} aesthetic photograph, ${briefData.editingTone}, professional photography`;
+        const imgData = await generateImage(prompt);
+        generatedImages[i] = imgData;
+        const cellIdx = [0,2,4,6,8][i];
+        const img = document.createElement('img');
+        img.src = imgData;
+        img.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;';
+        cells[cellIdx].innerHTML = '';
+        cells[cellIdx].appendChild(img);
+        if(gdot) gdot.className = 'gen-dot done';
+      } catch(imgErr) {
+        if(gdot) gdot.className = 'gen-dot done';
+        const cellIdx = [0,2,4,6,8][i];
+        renderFallbackCell(cells[cellIdx], briefData, i);
+      }
+    }
+
+    setLoadingStep(4);
+    await new Promise(r => setTimeout(r, 300));
+
+    progress.innerHTML = '<p style="font-size:12px;color:#7a9a5a;margin-top:8px;">✓ Feed mockup complete</p>';
+    document.getElementById('loading-view').style.display = 'none';
+    document.getElementById('result-view').style.display = 'block';
+
+  } catch(err) {
+    showError(`Something went wrong: ${err.message}`);
+  }
+}
+
+function renderTextCells(brief, cells) {
+  const palette = brief.palette || [];
+  const bg0 = palette[0]?.hex || '#c8793a';
+  const bg1 = palette[2]?.hex || '#4a9a9a';
+  const bg2 = palette[1]?.hex || '#f0e0c4';
+  const bg3 = palette[3]?.hex || '#1a0e0a';
+  const textLight = '#f0e0c4';
+  const textDark = '#2c1a0e';
+
+  const textPosts = [
+    { idx: 1, bg: bg0, color: textLight, content: `<div style="padding:8px;width:100%;height:100%;display:flex;flex-direction:column;justify-content:flex-end;"><p style="font-size:7px;letter-spacing:1.5px;text-transform:uppercase;color:${textLight};opacity:0.6;margin-bottom:4px;">${brief.mood||''}</p><p style="font-size:11px;font-style:italic;color:${textLight};line-height:1.35;">${brief.doList?.[0]||'You are sacred.'}</p></div>` },
+    { idx: 3, bg: bg1, color: textLight, content: `<div style="padding:8px;width:100%;height:100%;display:flex;flex-direction:column;justify-content:flex-start;"><p style="font-size:7px;letter-spacing:1.5px;text-transform:uppercase;color:${textLight};opacity:0.6;margin-bottom:5px;">The portal</p><p style="font-size:11px;font-style:italic;color:${textLight};line-height:1.4;">${brief.carouselTemplates?.[2]?.name||'What if you already knew?'}</p></div>` },
+    { idx: 5, bg: bg3, color: textLight, content: `<div style="padding:8px;width:100%;height:100%;display:flex;flex-direction:column;justify-content:flex-end;"><p style="font-size:10px;font-style:italic;color:${textLight};line-height:1.5;opacity:0.9;">"${brief.moodDescription?.split('.')[0]||'She is wild and holy'}."</p></div>` },
+    { idx: 7, bg: bg2, color: textDark, content: `<div style="padding:8px;width:100%;height:100%;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;"><div style="width:14px;height:0.5px;background:${bg0};margin:0 auto 8px;opacity:0.6;"></div><p style="font-size:10px;font-style:italic;color:${textDark};line-height:1.6;">${brief.doList?.[1]||'I am sensual, sacred, and unhurried.'}</p><div style="width:14px;height:0.5px;background:${bg0};margin:8px auto 0;opacity:0.6;"></div></div>` },
+  ];
+
+  textPosts.forEach(p => {
+    cells[p.idx].style.background = p.bg;
+    cells[p.idx].innerHTML = p.content;
+  });
+}
+
+function renderFallbackCell(cell, brief, idx) {
+  const palette = brief.palette || [];
+  const colors = ['#c8793a','#e8c8a8','#4a9a9a','#3d2a18','#d4b896'];
+  cell.style.background = colors[idx % colors.length];
+  cell.innerHTML = `<div style="padding:8px;width:100%;height:100%;display:flex;align-items:center;justify-content:center;"><p style="font-size:9px;font-style:italic;color:#f0e0c4;text-align:center;line-height:1.4;opacity:0.8;">${brief.mood||'Sacred aesthetic'}</p></div>`;
+}
+
+function renderBrief(b, clientName, niche) {
+  document.getElementById('r-name').textContent = clientName;
+  document.getElementById('r-niche').textContent = niche ? `${niche} · Aesthetic Brief` : 'Aesthetic Brief';
+  document.getElementById('feed-avatar').textContent = clientName.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  document.getElementById('feed-handle').textContent = '@' + clientName.toLowerCase().replace(/\s+/g,'').replace(/[^a-z0-9]/g,'');
+  document.getElementById('r-mood').textContent = b.mood || '';
+  document.getElementById('r-mood-desc').textContent = b.moodDescription || '';
+  document.getElementById('r-grid-insights').textContent = b.gridInsights || '';
+  document.getElementById('r-grid').textContent = b.gridStyle || '';
+  document.getElementById('r-space').textContent = b.negativeSpace || '';
+  document.getElementById('r-tone').textContent = b.editingTone || '';
+
+  const pal = document.getElementById('r-palette');
+  pal.innerHTML = (b.palette||[]).map(c=>`<div class="swatch"><div class="swatch-color" style="background:${c.hex};"></div><span class="swatch-hex">${c.hex}</span><span class="swatch-name">${c.name}</span><span class="swatch-role">${c.role}</span></div>`).join('');
+
+  const fonts = document.getElementById('r-fonts');
+  fonts.innerHTML = (b.fonts||[]).map(f=>`<div class="font-card"><p class="font-role-label">${f.role}</p><p class="font-name-text">${f.name}</p><p class="font-use-text">${f.usage}</p></div>`).join('');
+
+  const tmpl = document.getElementById('r-templates');
+  tmpl.innerHTML = (b.carouselTemplates||[]).map(t=>`<div class="template-card"><p class="template-card-name">${t.name}</p><p class="template-card-desc">${t.description}</p></div>`).join('');
+
+  const doEl = document.getElementById('r-do');
+  doEl.innerHTML = (b.doList||[]).map(d=>`<li>${d}</li>`).join('');
+  const avEl = document.getElementById('r-avoid');
+  avEl.innerHTML = (b.avoidList||[]).map(d=>`<li>${d}</li>`).join('');
+}
+
+function resetApp() {
+  gridBase64 = [];
+  briefData = null;
+  generatedImages = [];
+  document.getElementById('preview-strip').innerHTML = '';
+  document.getElementById('client-name').value = '';
+  document.getElementById('client-niche').value = '';
+  document.getElementById('client-audience').value = '';
+  document.getElementById('pinterest-desc').value = '';
+  document.getElementById('avoid-text').value = '';
+  document.querySelectorAll('.pill.on').forEach(p=>p.classList.remove('on'));
+  goStep(1);
+}
+</script>
+</body>
+</html>
