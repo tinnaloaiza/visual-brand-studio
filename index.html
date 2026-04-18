@@ -632,8 +632,8 @@ The imagePrompts must be detailed, photographic, and match the aesthetic. Includ
     const briefText = await callGemini(briefPrompt, allImages);
     let raw = briefText.replace(/```json|```/g,'').trim();
     const js = raw.indexOf('{'), je = raw.lastIndexOf('}');
-    if(js===-1||je===-1) throw new Error('Could not parse the brief. Please try again.');
-    briefData = JSON.parse(raw.slice(js, je+1));
+    if(js===-1||je===-1) throw new Error('Could not parse the brief. Please try again.'); raw = raw.slice(js, je+1).replace(/[\u0000-\u001F\u007F-\u009F]/g, ' ').replace(/,\s*}/g, '}').replace(/,\s*\]/g, ']');
+    briefData = JSON.parse(raw);
 
     renderBrief(briefData, clientName, niche);
 
