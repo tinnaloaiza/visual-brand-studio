@@ -525,9 +525,14 @@ async function generateImage(prompt) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      contents: [{ parts: [{ text: `Generate a photorealistic image: ${prompt}. Return ONLY a base64 encoded PNG image, nothing else.` }] }],
-      generationConfig: { responseModalities: ['IMAGE', 'TEXT'] }
-    })
+  contents: [{ parts: [
+    ...[...pinterestBase64, ...gridBase64].slice(0,3).map(b64 => ({
+      inlineData: { mimeType: b64.split(';')[0].split(':')[1], data: b64.split(',')[1] }
+    })),
+    { text: `These are reference images showing the exact visual aesthetic to match — the mood, colour grading, intimacy, darkness, grain, and compositional style. Do NOT copy these images. Generate a NEW original photograph that matches their visual language and feeling. ${prompt}` }
+  ]}],
+  generationConfig: { responseModalities: ['IMAGE', 'TEXT'] }
+})
   });
   if (!res.ok) {
     const e = await res.json().catch(()=>({}));
