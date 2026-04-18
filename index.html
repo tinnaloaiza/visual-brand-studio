@@ -526,10 +526,10 @@ async function generateImage(prompt) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
   contents: [{ parts: [
-    ...[...pinterestBase64, ...gridBase64].slice(0,3).map(b64 => ({
+    ...[...pinterestBase64, ...gridBase64].slice(0,2).map(b64 => ({
       inlineData: { mimeType: b64.split(';')[0].split(':')[1], data: b64.split(',')[1] }
     })),
-    { text: `These are reference images showing the exact visual aesthetic to match — the mood, colour grading, intimacy, darkness, grain, and compositional style. Do NOT copy these images. Generate a NEW original photograph that matches their visual language and feeling. ${prompt}` }
+    { text: `These reference images show the visual aesthetic direction ONLY. You MUST generate a completely new and original photograph — never reproduce or directly use any part of the reference images. Create something new that captures the same mood, colour temperature, intimacy and feeling. ${prompt}` }
   ]}],
   generationConfig: { responseModalities: ['IMAGE', 'TEXT'] }
 })
@@ -743,7 +743,6 @@ function renderBrief(b, clientName, niche) {
   document.getElementById('r-grid').textContent = b.gridStyle || '';
   document.getElementById('r-space').textContent = b.negativeSpace || '';
   document.getElementById('r-tone').textContent = b.editingTone || '';
- if(b.gridRhythm) { const gr = document.createElement('div'); gr.style.marginTop='1rem'; gr.innerHTML = `<p class="item-label">Grid rhythm</p><p class="item-value">${b.gridRhythm}</p>`; document.getElementById('r-tone').parentElement.appendChild(gr); }
 
   const pal = document.getElementById('r-palette');
   pal.innerHTML = (b.palette||[]).map(c=>`<div class="swatch"><div class="swatch-color" style="background:${c.hex};"></div><span class="swatch-hex">${c.hex}</span><span class="swatch-name">${c.name}</span><span class="swatch-role">${c.role}</span></div>`).join('');
